@@ -1,8 +1,9 @@
 """Shared Jeopardy-themed, mobile-friendly CSS with a muted, modern palette."""
 
 JEOPARDY_CSS = """
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
 :root {
     --bg: #1b2540;
     --panel: #25325a;
@@ -78,6 +79,13 @@ h1 {
     font-weight: 800;
 }
 
+/* Streamlit sizes a button's wrapper to fit-content by default, which
+   defeats `width: 100%` on the <button> itself. Force it to stretch so
+   buttons fill their column (especially the +/- and Save/Stats pairs). */
+div[data-testid="stElementContainer"]:has(button) {
+    width: 100% !important;
+}
+
 /* Big, thumb-friendly buttons */
 div.stButton > button {
     background-color: var(--accent);
@@ -131,14 +139,19 @@ table.cal td {
 .win-j { background-color: var(--j-color); color: var(--text); font-weight: 700; }
 .win-tie { background-color: var(--tie-color); color: var(--text); }
 
-/* Stack two-column rows on narrow phone screens so nothing gets squeezed */
+/* Keep two-column rows (+/- buttons, Save/Stats) side-by-side even on
+   narrow phone screens. Streamlit sets flex-direction via inline style
+   below its own breakpoint, so this must win with !important. */
 @media (max-width: 480px) {
     div[data-testid="stHorizontalBlock"] {
-        flex-direction: row;
-        gap: 0.4rem;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 0.4rem !important;
     }
-    div[data-testid="column"] {
-        min-width: 0;
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+        width: 0 !important;
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
     }
     .block-container {
         padding-left: 0.5rem;
