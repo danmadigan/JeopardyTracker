@@ -2,55 +2,10 @@ import streamlit as st
 from datetime import date
 
 from db import init_db, save_game, get_game, TEAMS
+from style import JEOPARDY_CSS
 
 st.set_page_config(page_title="Jeopardy! Tracker", page_icon="🔷", layout="centered")
 init_db()
-
-JEOPARDY_CSS = """
-<style>
-.stApp {
-    background-color: #060CE9;
-    color: #FFFFFF;
-}
-h1, h2, h3 {
-    font-family: 'Georgia', serif;
-    color: #FFCC00 !important;
-    text-shadow: 2px 2px 4px #000000;
-    text-align: center;
-}
-.team-name {
-    font-family: 'Georgia', serif;
-    font-size: 2rem;
-    color: #FFCC00;
-    text-align: center;
-    text-shadow: 2px 2px 3px #000;
-}
-.score-box {
-    background-color: #000099;
-    border: 3px solid #FFCC00;
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    font-size: 3.5rem;
-    font-weight: bold;
-    color: #FFFFFF;
-    font-family: 'Georgia', serif;
-}
-div.stButton > button {
-    background-color: #FFCC00;
-    color: #060CE9;
-    font-weight: bold;
-    font-size: 1.3rem;
-    border-radius: 8px;
-    border: 2px solid #FFFFFF;
-    width: 100%;
-}
-div.stButton > button:hover {
-    background-color: #FFFFFF;
-    color: #060CE9;
-}
-</style>
-"""
 st.markdown(JEOPARDY_CSS, unsafe_allow_html=True)
 
 st.title("🔷 JEOPARDY! TRACKER 🔷")

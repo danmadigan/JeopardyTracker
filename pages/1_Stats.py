@@ -4,65 +4,10 @@ from datetime import date
 import streamlit as st
 
 from db import init_db, get_all_games
+from style import JEOPARDY_CSS
 
 st.set_page_config(page_title="Jeopardy! Stats", page_icon="📊", layout="centered")
 init_db()
-
-JEOPARDY_CSS = """
-<style>
-.stApp {
-    background-color: #060CE9;
-    color: #FFFFFF;
-}
-h1, h2, h3 {
-    font-family: 'Georgia', serif;
-    color: #FFCC00 !important;
-    text-shadow: 2px 2px 4px #000000;
-    text-align: center;
-}
-.stat-box {
-    background-color: #000099;
-    border: 3px solid #FFCC00;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-    font-family: 'Georgia', serif;
-}
-.stat-label {
-    color: #FFFFFF;
-    font-size: 1rem;
-}
-.stat-value {
-    color: #FFCC00;
-    font-size: 2.2rem;
-    font-weight: bold;
-}
-table.cal {
-    width: 100%;
-    border-collapse: collapse;
-}
-table.cal th {
-    color: #FFCC00;
-    font-family: 'Georgia', serif;
-    padding: 6px;
-}
-table.cal td {
-    border: 1px solid #FFCC00;
-    text-align: center;
-    height: 60px;
-    vertical-align: top;
-    padding: 4px;
-    font-family: 'Georgia', serif;
-}
-.day-num {
-    color: #FFFFFF;
-    font-size: 0.8rem;
-}
-.win-d { background-color: #1a4fd6; color: #FFCC00; font-weight: bold; }
-.win-j { background-color: #d62828; color: #FFCC00; font-weight: bold; }
-.win-tie { background-color: #444444; color: #FFFFFF; }
-</style>
-"""
 st.markdown(JEOPARDY_CSS, unsafe_allow_html=True)
 
 st.title("📊 ALL-TIME STATS")
