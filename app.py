@@ -10,19 +10,24 @@ st.markdown(JEOPARDY_CSS, unsafe_allow_html=True)
 
 st.title("🔷 JEOPARDY! TRACKER 🔷")
 st.markdown(
-    "<p style='text-align:center; color:#FFFFFF;'>Tally today's correct answers for Team D and Team J</p>",
+    "<p style='text-align:center; color:#aab1c5;'>Tally correct answers for Team D and Team J</p>",
     unsafe_allow_html=True,
 )
 
 today = date.today()
 
-if "game_date" not in st.session_state or st.session_state.game_date != today:
-    existing = get_game(today)
-    st.session_state.game_date = today
+selected_date = st.date_input(
+    "Game date",
+    value=st.session_state.get("selected_date", today),
+    max_value=today,
+)
+
+if "game_date" not in st.session_state or st.session_state.game_date != selected_date:
+    existing = get_game(selected_date)
+    st.session_state.game_date = selected_date
+    st.session_state.selected_date = selected_date
     st.session_state.d_score = existing[0] if existing else 0
     st.session_state.j_score = existing[1] if existing else 0
-
-st.markdown(f"<p style='text-align:center;'>Today: {today.strftime('%B %d, %Y')}</p>", unsafe_allow_html=True)
 
 col_d, col_j = st.columns(2)
 
@@ -50,11 +55,11 @@ with col_j:
 
 st.markdown("---")
 
-if st.button("💾 SAVE TODAY'S SCORE", key="save"):
-    save_game(today, st.session_state.d_score, st.session_state.j_score)
-    st.success(f"Saved! D: {st.session_state.d_score} — J: {st.session_state.j_score}")
-
-st.markdown(
-    "<p style='text-align:center; color:#FFCC00;'>See the Stats page in the sidebar for all-time records and the win calendar.</p>",
-    unsafe_allow_html=True,
-)
+save_col, stats_col = st.columns(2)
+with save_col:
+    if st.button("💾 SAVE SCORE", key="save"):
+        save_game(selected_date, st.session_state.d_score, st.session_state.j_score)
+        st.success(f"Saved {selected_date.strftime('%b %d, %Y')}! D: {st.session_state.d_score} — J: {st.session_state.j_score}")
+with stats_col:
+    if st.button("📊 STATS", key="go_stats"):
+        st.switch_page("pages/1_Stats.py")
