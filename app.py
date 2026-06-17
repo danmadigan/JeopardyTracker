@@ -29,6 +29,13 @@ if "game_date" not in st.session_state or st.session_state.game_date != selected
     st.session_state.d_score = existing[0] if existing else 0
     st.session_state.j_score = existing[1] if existing else 0
 
+if "busy" not in st.session_state:
+    st.session_state.busy = False
+if "pending_save" not in st.session_state:
+    st.session_state.pending_save = False
+
+busy = st.session_state.busy
+
 col_d, col_j = st.columns(2)
 
 with col_d:
@@ -36,10 +43,10 @@ with col_d:
     st.markdown(f"<div class='score-box'>{st.session_state.d_score}</div>", unsafe_allow_html=True)
     plus_d, minus_d = st.columns(2)
     with plus_d:
-        if st.button("➕", key="d_plus"):
+        if st.button("➕", key="d_plus", disabled=busy):
             st.session_state.d_score += 1
     with minus_d:
-        if st.button("➖", key="d_minus"):
+        if st.button("➖", key="d_minus", disabled=busy):
             st.session_state.d_score = max(0, st.session_state.d_score - 1)
 
 with col_j:
@@ -47,19 +54,29 @@ with col_j:
     st.markdown(f"<div class='score-box'>{st.session_state.j_score}</div>", unsafe_allow_html=True)
     plus_j, minus_j = st.columns(2)
     with plus_j:
-        if st.button("➕", key="j_plus"):
+        if st.button("➕", key="j_plus", disabled=busy):
             st.session_state.j_score += 1
     with minus_j:
-        if st.button("➖", key="j_minus"):
+        if st.button("➖", key="j_minus", disabled=busy):
             st.session_state.j_score = max(0, st.session_state.j_score - 1)
 
 st.markdown("---")
 
 save_col, stats_col = st.columns(2)
 with save_col:
-    if st.button("💾 SAVE SCORE", key="save"):
-        save_game(selected_date, st.session_state.d_score, st.session_state.j_score)
-        st.success(f"Saved {selected_date.strftime('%b %d, %Y')}! D: {st.session_state.d_score} — J: {st.session_state.j_score}")
+    if st.button("💾 SAVE SCORE", key="save", disabled=busy):
+        st.session_state.busy = True
+        st.session_state.pending_save = True
+        st.session_state.save_payload = (selected_date, st.session_state.d_score, st.session_state.j_score)
+        st.rerun()
 with stats_col:
-    if st.button("📊 STATS", key="go_stats"):
+    if st.button("📊 STATS", key="go_stats", disabled=busy):
         st.switch_page("pages/1_Stats.py")
+
+if st.session_state.pending_save:
+    save_date, save_d, save_j = st.session_state.save_payload
+    with st.spinner("Saving..."):
+        save_game(save_date, save_d, save_j)
+    st.session_state.pending_save = False
+    st.session_state.busy = False
+    st.toast(f"Saved {save_date.strftime('%b %d, %Y')}! D: {save_d} — J: {save_j}", icon="✅")
