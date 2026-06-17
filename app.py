@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import date
 
-from db import init_db, save_game, get_game, TEAMS
+from sheets_db import init_db, save_game, get_game
 from style import JEOPARDY_CSS
 
 st.set_page_config(page_title="Jeopardy! Tracker", page_icon="🔷", layout="centered")

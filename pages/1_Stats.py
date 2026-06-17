@@ -3,7 +3,7 @@ from datetime import date
 
 import streamlit as st
 
-from db import init_db, get_all_games
+from sheets_db import init_db, get_all_games
 from style import JEOPARDY_CSS
 
 st.set_page_config(page_title="Jeopardy! Stats", page_icon="📊", layout="centered")
