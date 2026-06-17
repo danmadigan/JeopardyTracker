@@ -144,9 +144,9 @@ html += "</table>"
 st.markdown(html, unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align:center; margin-top:10px;'>"
-    "<span style='background-color:#1a4fd6; color:#FFCC00; padding:2px 8px; border-radius:4px;'>D win</span> "
-    "<span style='background-color:#d62828; color:#FFCC00; padding:2px 8px; border-radius:4px;'>J win</span> "
-    "<span style='background-color:#444444; color:#FFFFFF; padding:2px 8px; border-radius:4px;'>Tie</span>"
+    "<span style='background-color:#5b8aa8; color:#e8e9ee; padding:2px 8px; border-radius:4px;'>D win</span> "
+    "<span style='background-color:#b06a5b; color:#e8e9ee; padding:2px 8px; border-radius:4px;'>J win</span> "
+    "<span style='background-color:#6b7280; color:#e8e9ee; padding:2px 8px; border-radius:4px;'>Tie</span>"
     "</p>",
     unsafe_allow_html=True,
 )
