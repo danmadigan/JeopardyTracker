@@ -1,46 +1,52 @@
-"""Google Sheets persistence for the Jeopardy tracker.
+"""Google Sheets persistence via an Apps Script Web App.
 
-Requires a `[connections.gsheets]` section in `.streamlit/secrets.toml`
-(see `.streamlit/secrets.toml.example`) pointing at a Google Sheet shared
-with a service account. The sheet just needs a worksheet named "games";
-the header row is written automatically on the first save.
+No Google Cloud Console project, API enabling, or service account is
+needed. Deploy `apps_script/Code.gs` as a Web App from inside the Google
+Sheet itself, then put the resulting URL and shared token in
+`.streamlit/secrets.toml` (see `.streamlit/secrets.toml.example`).
 """
 from datetime import date
 
-import pandas as pd
+import requests
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 
-WORKSHEET = "games"
-COLUMNS = ["game_date", "d_score", "j_score", "winner"]
 TEAMS = ("D", "J")
+TIMEOUT = 10
 
 
-def _get_conn():
-    return st.connection("gsheets", type=GSheetsConnection)
-
-
-def _read_df() -> pd.DataFrame:
-    conn = _get_conn()
-    try:
-        df = conn.read(worksheet=WORKSHEET, ttl=0)
-    except Exception:
-        df = None
-
-    if df is None or df.empty:
-        return pd.DataFrame(columns=COLUMNS)
-
-    df = df.dropna(how="all")
-    df["game_date"] = df["game_date"].astype(str)
-    df["d_score"] = pd.to_numeric(df["d_score"], errors="coerce").fillna(0).astype(int)
-    df["j_score"] = pd.to_numeric(df["j_score"], errors="coerce").fillna(0).astype(int)
-    df["winner"] = df["winner"].astype(str)
-    return df[COLUMNS]
+def _config():
+    cfg = st.secrets["gsheets_webapp"]
+    return cfg["url"], cfg["token"]
 
 
 def init_db():
-    """No-op: the worksheet header is created on first save_game call."""
+    """No-op: the Apps Script creates the sheet/header on first save."""
     pass
+
+
+def _fetch_all():
+    url, token = _config()
+    resp = requests.get(url, params={"token": token}, timeout=TIMEOUT)
+    resp.raise_for_status()
+    data = resp.json()
+    if "error" in data:
+        raise RuntimeError(f"Apps Script error: {data['error']}")
+
+    games = []
+    for row in data.get("games", []):
+        try:
+            games.append(
+                (
+                    str(row["game_date"]),
+                    int(row["d_score"] or 0),
+                    int(row["j_score"] or 0),
+                    str(row["winner"]),
+                )
+            )
+        except (KeyError, TypeError, ValueError):
+            continue
+    games.sort(key=lambda g: g[0])
+    return games
 
 
 def save_game(game_date: date, d_score: int, j_score: int):
@@ -51,28 +57,28 @@ def save_game(game_date: date, d_score: int, j_score: int):
     else:
         winner = "TIE"
 
-    date_str = game_date.isoformat()
-    df = _read_df()
-    df = df[df["game_date"] != date_str]
-    new_row = pd.DataFrame(
-        [{"game_date": date_str, "d_score": d_score, "j_score": j_score, "winner": winner}]
-    )
-    df = pd.concat([df, new_row], ignore_index=True).sort_values("game_date")
-
-    conn = _get_conn()
-    conn.update(worksheet=WORKSHEET, data=df)
-    st.cache_data.clear()
+    url, token = _config()
+    payload = {
+        "token": token,
+        "game_date": game_date.isoformat(),
+        "d_score": d_score,
+        "j_score": j_score,
+        "winner": winner,
+    }
+    resp = requests.post(url, json=payload, timeout=TIMEOUT)
+    resp.raise_for_status()
+    data = resp.json()
+    if data.get("status") != "ok":
+        raise RuntimeError(f"Apps Script error: {data.get('error', 'unknown')}")
 
 
 def get_game(game_date: date):
-    df = _read_df()
-    row = df[df["game_date"] == game_date.isoformat()]
-    if row.empty:
-        return None
-    r = row.iloc[0]
-    return (int(r.d_score), int(r.j_score))
+    date_str = game_date.isoformat()
+    for d, d_score, j_score, _winner in _fetch_all():
+        if d == date_str:
+            return (d_score, j_score)
+    return None
 
 
 def get_all_games():
-    df = _read_df().sort_values("game_date")
-    return list(df[COLUMNS].itertuples(index=False, name=None))
+    return _fetch_all()

@@ -10,17 +10,26 @@ A free, Jeopardy!-themed Streamlit app for tracking how many correct answers Tea
 Scores are stored in a Google Sheet (so they persist across deploys and are
 shared from any device, including your phone).
 
-## Google Sheets setup
-1. Create a Google Sheet with a worksheet named `games` (any sheet name, the
-   worksheet must be named `games`).
-2. In [Google Cloud Console](https://console.cloud.google.com/), create a
-   project, enable the **Google Sheets API** and **Google Drive API**, then
-   create a service account and download its JSON key.
-3. Share the Google Sheet with the service account's email address
-   (found in the JSON key as `client_email`) as an **Editor**.
-4. Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and
-   fill in the values from the JSON key plus your sheet's URL. This file is
-   gitignored — never commit real credentials.
+## Google Sheets setup (no Cloud Console needed)
+Scores are stored via a small Apps Script "Web App" bound to your own
+Google Sheet — no Google Cloud Console project, API enabling, or service
+account required, and it's entirely free.
+
+1. Create a Google Sheet (any name).
+2. In the Sheet, go to **Extensions -> Apps Script**, delete the default
+   code, and paste in the contents of [`apps_script/Code.gs`](apps_script/Code.gs).
+3. In the script, change the `TOKEN` constant to your own random secret
+   string (this keeps strangers from writing to your sheet).
+4. Click **Deploy -> New deployment**, choose type **Web app**, set
+   "Execute as" to **Me** and "Who has access" to **Anyone with the link**,
+   then click **Deploy** and authorize the script when prompted.
+5. Copy the web app URL it gives you.
+6. Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and
+   fill in that URL and your `TOKEN`. This file is gitignored — never
+   commit real secrets.
+
+The script automatically creates a `games` worksheet with the right header
+the first time you save a score.
 
 ## Run locally
 ```bash
